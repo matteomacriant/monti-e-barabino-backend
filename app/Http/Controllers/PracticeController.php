@@ -16,7 +16,12 @@ class PracticeController extends Controller
 
     public function index(Request $request)
     {
-        $query = Practice::with('user');
+        $query = Practice::with('user')
+            ->withExists([
+                'favoritedBy as is_favorite' => function ($query) use ($request) {
+                    $query->where('user_id', $request->user()->id);
+                }
+            ]);
 
         // Status Filter (Default to 'active' if not specified? Or 'all'? Wireframe says tabs. Let's default to all or handle in frontend)
         if ($request->has('status') && $request->status) {
