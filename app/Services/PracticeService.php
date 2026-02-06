@@ -11,11 +11,22 @@ class PracticeService
     protected function generateCode($year, $month)
     {
         // "anno-mese + progressivo annuale" -> YYYY-MM-XXXX (resetting at year start)
-        // Check strict locking if concurrency is high, but for now simple count + 1
 
-        // Count practices in this YEAR
-        $count = Practice::where('year', $year)->count();
-        $progressive = $count + 1;
+        // Retrieve all codes for the given year to find the highest progressive
+        $codes = Practice::where('year', $year)->pluck('code');
+
+        $maxProgressive = 0;
+        foreach ($codes as $c) {
+            // Assume format YYYY-MM-XXXX, extract last 4 digits
+            if (preg_match('/-(\d{4})$/', $c, $matches)) {
+                $val = (int) $matches[1];
+                if ($val > $maxProgressive) {
+                    $maxProgressive = $val;
+                }
+            }
+        }
+
+        $progressive = $maxProgressive + 1;
 
         return sprintf('%04d-%02d-%04d', $year, $month, $progressive);
     }
