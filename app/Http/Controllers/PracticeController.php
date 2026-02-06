@@ -80,6 +80,13 @@ class PracticeController extends Controller
     public function show($id)
     {
         $practice = Practice::with(['attachments', 'user', 'relatedPractices'])->findOrFail($id);
+
+        $lineage = $this->practiceService->getLineage($practice);
+        // Map lineage to simple array to avoid recursion and reduce payload
+        $practice->lineage = collect($lineage)->map(function ($p) {
+            return $p->only(['id', 'code', 'title', 'status', 'created_at']);
+        });
+
         return response()->json($practice);
     }
 
@@ -144,6 +151,20 @@ class PracticeController extends Controller
 
         $practice->delete();
         return response()->json(['message' => 'Deleted']);
+    }
+
+    public function clone(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'with_attachments' => 'boolean',
+            'link_to_parent' => 'boolean',
+        ]);
+
+        $original = Practice::findOrFail($id);
+
+        $clone = $this->practiceService->clone($original, $request->user(), $validated);
+
+        return response()->json($clone, 201);
     }
 
 

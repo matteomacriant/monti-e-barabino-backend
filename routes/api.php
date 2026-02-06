@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::post('/practices/{id}/favorite', [PracticeController::class, 'toggleFavorite']);
+    Route::post('/practices/{id}/clone', [PracticeController::class, 'clone']);
     Route::apiResource('practices', PracticeController::class);
     Route::apiResource('attachments', AttachmentController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('saved-searches', SavedSearchController::class)->only(['index', 'store', 'destroy']);
