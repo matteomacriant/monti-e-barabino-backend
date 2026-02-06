@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Practice extends Model
 {
     /** @use HasFactory<\Database\Factories\PracticeFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'code',
         'title',

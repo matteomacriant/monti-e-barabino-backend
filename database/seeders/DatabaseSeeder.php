@@ -17,14 +17,51 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password', // Factory default usually uses Hash::make('password') or similar, standard Laravel 11 factory is 'password'
-            'role' => 'admin', // If I added 'role' column? Directives mentioned "differenziati in base al livello dell'utente" and code used $user->role.
-            // Wait, did I add 'role' column to users table? 
-            // I ran standard migrations. Does UserFactory have role? 
-            // I need to check migration for users table.
+            'password' => 'password',
+            'role' => 'admin',
         ]);
+
+        // Create random practices for this user
+        $activePractices = \App\Models\Practice::factory(20)->create([
+            'user_id' => $user->id,
+            'year' => 2026,
+            'status' => 'active',
+        ]);
+
+        $archivedPractices = \App\Models\Practice::factory(15)->create([
+            'user_id' => $user->id,
+            'year' => 2025,
+            'status' => 'archived',
+        ]);
+
+        $otherPractices = \App\Models\Practice::factory(10)->create([
+            'user_id' => $user->id,
+            'year' => 2024,
+            'status' => 'active',
+        ]);
+
+        // Attach files to practices
+        $allPractices = $activePractices->merge($archivedPractices)->merge($otherPractices);
+
+        foreach ($allPractices as $index => $practice) {
+            $rand = rand(1, 100);
+
+            if ($rand <= 30) {
+                // No attachments
+                continue;
+            } elseif ($rand <= 70) {
+                // 1 attachment
+                \App\Models\Attachment::factory()->create(['practice_id' => $practice->id]);
+            } else {
+                // Multiple attachments
+                \App\Models\Attachment::factory(rand(2, 4))->create(['practice_id' => $practice->id]);
+            }
+        }
+
+        // Create some random practices for other users
+        \App\Models\Practice::factory(10)->create();
     }
 }
